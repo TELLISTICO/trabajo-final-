@@ -1,35 +1,45 @@
+# app.py
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
+import random
 
-def calcular_trajectory(v0, angle, g=9.81):
-    angle_rad = np.radians(angle)
-    t_flight = (2 * v0 * np.sin(angle_rad)) / g
-    t = np.linspace(0, t_flight, num=500)
-    x = v0 * np.cos(angle_rad) * t
-    y = v0 * np.sin(angle_rad) * t - (0.5 * g * t**2)
-    return x, y
+st.title("Conservación de la Energía: Conversión entre Energía Potencial y Cinética")
 
-# Título de la app
-st.title("Simulador de Trayectoria de un Proyectil")
+st.write("""
+Este sitio te permite practicar preguntas de conservación de la energía, enfocándose en la conversión entre energía potencial y energía cinética.
+""")
 
-# Parámetros del usuario
-v0 = st.number_input("Ingrese la velocidad inicial (m/s)", min_value=0.0, value=10.0)
-angle = st.number_input("Ingrese el ángulo de tiro (grados)", min_value=0.0, max_value=90.0, value=45.0)
+# Pregunta aleatoria de conversión entre energía potencial y cinética
+def generar_pregunta():
+    masa = random.randint(1, 10)  # masa en kg
+    altura = random.randint(1, 20)  # altura en metros
+    velocidad = random.randint(1, 10)  # velocidad en m/s
+    
+    # Pregunta con solo energía potencial a cinética
+    tipo_pregunta = random.choice(["potencial-a-cinetica", "cinetica-a-potencial"])
+    
+    if tipo_pregunta == "potencial-a-cinetica":
+        energia_potencial = masa * 9.81 * altura
+        pregunta = f"Si un objeto de {masa} kg se encuentra a una altura de {altura} m, ¿cuál será su velocidad justo antes de tocar el suelo?"
+        respuesta_correcta = (2 * energia_potencial / masa) ** 0.5
+    else:
+        energia_cinetica = 0.5 * masa * velocidad ** 2
+        pregunta = f"Si un objeto de {masa} kg se mueve a una velocidad de {velocidad} m/s, ¿a qué altura alcanzaría si toda su energía cinética se convierte en energía potencial?"
+        respuesta_correcta = energia_cinetica / (masa * 9.81)
 
-# Calcular la trayectoria
-x, y = calcular_trajectory(v0, angle)
+    return pregunta, round(respuesta_correcta, 2)
 
-# Mostrar el gráfico
-fig, ax = plt.subplots()
-ax.plot(x, y)
-ax.set_xlabel("Distancia (m)")
-ax.set_ylabel("Altura (m)")
-ax.set_title("Trayectoria del Proyectil")
-ax.grid()
-st.pyplot(fig)
+# Mostrar pregunta
+pregunta, respuesta_correcta = generar_pregunta()
+st.write(pregunta)
 
-# Distancia máxima
-distancia_maxima = x[-1]
-st.write(f"La distancia máxima alcanzada es: {distancia_maxima:.2f} m")
+# Entrada del usuario
+respuesta_usuario = st.number_input("Tu respuesta:", format="%.2f")
+if st.button("Comprobar respuesta"):
+    if abs(respuesta_usuario - respuesta_correcta) < 0.1:
+        st.success("¡Correcto!")
+    else:
+        st.error(f"Incorrecto. La respuesta correcta era {respuesta_correcta}.")
 
+# Generar una nueva pregunta
+if st.button("Nueva pregunta"):
+    st.experimental_rerun()
